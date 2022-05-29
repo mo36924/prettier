@@ -260,7 +260,14 @@ function isGraphQL(path) {
           parent.tag.object.name === "graphql" &&
           parent.tag.property.name === "experimental") ||
           (parent.tag.type === "Identifier" &&
-            (parent.tag.name === "gql" || parent.tag.name === "graphql")))) ||
+            (parent.tag.name === "gql" ||
+              parent.tag.name === "graphql" ||
+              parent.tag.name === "query" ||
+              parent.tag.name === "mutation" ||
+              parent.tag.name === "subscription" ||
+              parent.tag.name === "useQuery" ||
+              parent.tag.name === "useMutation" ||
+              parent.tag.name === "useSubscription")))) ||
         (parent.type === "CallExpression" &&
           parent.callee.type === "Identifier" &&
           parent.callee.name === "graphql")))
@@ -293,6 +300,15 @@ function isHtml(path) {
         node.type === "TaggedTemplateExpression" &&
         node.tag.type === "Identifier" &&
         node.tag.name === "html" &&
+        name === "quasi"
+    ) ||
+    path.match(
+      (node) => node.type === "TemplateLiteral",
+      (node, name) =>
+        node.type === "TaggedTemplateExpression" &&
+        node.tag.type === "MemberExpression" &&
+        node.tag.property.type === "Identifier" &&
+        node.tag.property.name === "html" &&
         name === "quasi"
     )
   );

@@ -1,5 +1,5 @@
 {
-  "name": "prettier",
+  "name": "@mo36924/prettier",
   "version": "2.6.2",
   "description": "Prettier is an opinionated code formatter",
   "bin": "./bin/prettier.js",
@@ -9,8 +9,16 @@
   "author": "James Long",
   "license": "MIT",
   "main": "./index.js",
+  "module": "./index.mjs",
   "browser": "./standalone.js",
   "unpkg": "./standalone.js",
+  "exports": {
+    ".": {
+      "import": "./index.mjs",
+      "require": "./index.js",
+      "default": "./index.js"
+    }
+  },
   "engines": {
     "node": ">=12.17.0"
   },
@@ -166,5 +174,8 @@
     "not ie 11",
     "not safari 5.1",
     "not op_mini all"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }

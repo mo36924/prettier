@@ -156,10 +156,10 @@ async function preparePackage() {
     prepublishOnly:
       "node -e \"assert.equal(require('.').version, require('..').version)\"",
   };
-  packageJson.files = ["*.js", "esm/*.mjs"];
+  packageJson.files = ["*.js", "esm/*.mjs", "index.mjs"];
   await writeJson(path.join(DIST_DIR, "package.json"), packageJson);
 
-  for (const file of ["README.md", "LICENSE"]) {
+  for (const file of ["README.md", "LICENSE", "index.mjs"]) {
     await copyFile(path.join(PROJECT_ROOT, file), path.join(DIST_DIR, file));
   }
 }

@@ -1,7 +1,8 @@
 "use strict";
 
 const {
-  builders: { indent, join, hardline },
+  builders: { indent, join, hardline, softline },
+  utils: { mapDoc, cleanDoc, replaceEndOfLine },
 } = require("../../document/index.js");
 const {
   escapeTemplateCharacters,
@@ -18,6 +19,46 @@ function format(path, print, textToDoc) {
 
   const expressionDocs = printTemplateExpressions(path, print);
   const parts = [];
+
+  const parent = path.getParentNode();
+  if (
+    parent &&
+    parent.type === "TaggedTemplateExpression" &&
+    parent.tag.type === "Identifier" &&
+    (parent.tag.name === "gql" ||
+      parent.tag.name === "query" ||
+      parent.tag.name === "mutation" ||
+      parent.tag.name === "subscription" ||
+      parent.tag.name === "useQuery" ||
+      parent.tag.name === "useMutation" ||
+      parent.tag.name === "useSubscription")
+  ) {
+    const text = node.quasis
+      .map((quasi) => quasi.value.cooked)
+      .reduce((previous, current, i) => `${previous}$_${i - 1}_${current}`);
+    const doc = textToDoc(
+      text,
+      { parser: "graphql" },
+      { stripTrailingHardline: true }
+    );
+    let replaceCounter = 0;
+    const newDoc = mapDoc(cleanDoc(doc), (doc) => {
+      if (typeof doc !== "string" || !doc.includes("$_")) {
+        return doc;
+      }
+      return doc.split(/\$_(\d+)_/).map((component, i) => {
+        if (i % 2 === 0) {
+          return replaceEndOfLine(component);
+        }
+        replaceCounter++;
+        return expressionDocs[component];
+      });
+    });
+    if (expressionDocs.length !== replaceCounter) {
+      throw new Error("Couldn't insert all the expressions");
+    }
+    return ["`", indent([hardline, newDoc]), softline, "`"];
+  }
 
   for (let i = 0; i < numQuasis; i++) {
     const templateElement = node.quasis[i];
