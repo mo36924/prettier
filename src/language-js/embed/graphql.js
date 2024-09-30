@@ -1,4 +1,5 @@
-import { hardline, indent, join } from "../../document/builders.js";
+import { hardline, indent, join, softline } from "../../document/builders.js";
+import { cleanDoc, mapDoc, replaceEndOfLine } from "../../document/utils.js";
 import {
   escapeTemplateCharacters,
   printTemplateExpressions,
@@ -6,6 +7,35 @@ import {
 import { hasLanguageComment } from "./utils.js";
 
 async function printEmbedGraphQL(textToDoc, print, path /*, options*/) {
+  const text = path.node.quasis
+    .map((quasi) => quasi.value.raw)
+    .reduce(
+      (previous, current, i) =>
+        `${previous}$prettier_placeholder_${i - 1}_id${current}`,
+    );
+  const doc = await textToDoc(text, { parser: "graphql" });
+  const expressionDocs = printTemplateExpressions(path, print);
+  let replaceCounter = 0;
+  const newDoc = mapDoc(cleanDoc(doc), (doc) => {
+    if (typeof doc !== "string" || !doc.includes("$prettier_placeholder")) {
+      return doc;
+    }
+    return doc.split(/\$prettier_placeholder_(\d+)_id/u).map((component, i) => {
+      if (i % 2 === 0) {
+        return replaceEndOfLine(component);
+      }
+      replaceCounter++;
+      return expressionDocs[component];
+    });
+  });
+  if (expressionDocs.length !== replaceCounter) {
+    throw new Error("Couldn't insert all the expressions");
+  }
+  return ["`", indent([hardline, newDoc]), softline, "`"];
+}
+
+// eslint-disable-next-line no-unused-vars
+async function _printEmbedGraphQL(textToDoc, print, path /*, options*/) {
   const { node } = path;
 
   const numQuasis = node.quasis.length;
