@@ -132,7 +132,7 @@ async function createBundle(bundleConfig, options) {
 
 async function preparePackage() {
   const packageJson = await readJson(path.join(PROJECT_ROOT, "package.json"));
-  packageJson.bin = undefined;
+  delete packageJson.bin;
   packageJson.engines.node = ">=10.13.0";
   delete packageJson.dependencies;
   delete packageJson.devDependencies;
@@ -141,7 +141,19 @@ async function preparePackage() {
     prepublishOnly:
       "node -e \"assert.equal(require('.').version, require('..').version)\"",
   };
-  packageJson.files = ["*.js", "esm/*.mjs"];
+  packageJson.files = ["*.js", "esm/*.mjs", "index.d.ts"];
+  packageJson.exports = {
+    ".": {
+      types: "./index.d.ts",
+      require: "./index.cjs",
+      browser: {
+        import: "./standalone.mjs",
+        default: "./standalone.js",
+      },
+      default: "./index.mjs",
+    },
+    "./*": "./*",
+  };
   await writeJson(path.join(DIST_DIR, "package.json"), packageJson);
 
   for (const file of ["README.md", "LICENSE"]) {
