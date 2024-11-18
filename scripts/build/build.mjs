@@ -141,19 +141,7 @@ async function preparePackage() {
     prepublishOnly:
       "node -e \"assert.equal(require('.').version, require('..').version)\"",
   };
-  packageJson.files = ["*.js", "esm/*.mjs", "index.d.ts"];
-  packageJson.exports = {
-    ".": {
-      types: "./index.d.ts",
-      require: "./index.cjs",
-      browser: {
-        import: "./standalone.mjs",
-        default: "./standalone.js",
-      },
-      default: "./index.mjs",
-    },
-    "./*": "./*",
-  };
+  packageJson.files = ["*.js", "esm/*.mjs"];
   await writeJson(path.join(DIST_DIR, "package.json"), packageJson);
 
   for (const file of ["README.md", "LICENSE"]) {

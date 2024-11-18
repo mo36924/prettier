@@ -1,6 +1,6 @@
 {
   "name": "@mo36924/prettier-v2",
-  "version": "2.8.9",
+  "version": "2.8.10",
   "description": "Prettier is an opinionated code formatter",
   "bin": "./bin/prettier.js",
   "repository": "prettier/prettier",
